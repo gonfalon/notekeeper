@@ -1,3 +1,4 @@
+<!--I believe this gets overridden by layouts/default.vue-->
 <template>
   <v-app>
     <v-main>
