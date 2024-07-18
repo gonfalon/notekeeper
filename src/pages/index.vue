@@ -7,7 +7,9 @@
     </v-app-bar>
     <v-navigation-drawer
       class="pt-4"
-      v-model="drawer"
+      permanent
+      v-bind:rail="!drawer"
+      expand-on-hover
     >
       <v-list
         nav
@@ -26,9 +28,9 @@
     </v-navigation-drawer>
     <v-main>
       <v-container>
-        <Note @update="store.updateNote"  />
+        <NoteCard :prevent-dialog="true" @click="newNote" />
         <template v-for="note in visibleNotes" :key="note.id">
-          <Note :note="note" @update="store.updateNote"/>
+          <NoteCard :id="`note-${note.id}`" :note="note" @update="store.updateNote"/>
         </template>
       </v-container>
     </v-main>
@@ -49,7 +51,7 @@
   const visibleNotes = ref(store.notes);
 
   const navItems = ref([
-    { title: ALLNOTES, icon: 'mdi-lightbulb-outline' },
+    { title: ALLNOTES, icon: 'mdi-pencil-outline' },
     ...store.tags.map(tag => ({ title: tag, icon: 'mdi-tag-outline' })),
     { title: 'Archive', icon: 'mdi-file-cabinet' },
     { title: 'Trash', icon: 'mdi-delete-outline' },
@@ -58,5 +60,14 @@
   const setActiveFilter = (tag) => {
     activeItem.value = tag;
     visibleNotes.value = tag === ALLNOTES ? store.notes : store.notes.filter(note => note.tags.includes(tag));
+  }
+  
+  const newNote = () => {
+    var id = store.newNote();
+    setTimeout(() => {
+      var el = document.getElementById(`note-${id}`)
+      el.scrollIntoView({ behavior: 'smooth' });
+      el.click();
+    }, 100);
   }
 </script>

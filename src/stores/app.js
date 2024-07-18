@@ -25,13 +25,18 @@ export const useAppStore = defineStore('app', {
   },
   actions: {
     // methods
-    updateNote(note) {
-      if(!note.id) {
-        note.id = this.notes.length + 1;
-        this.notes.push(note);
-        return;
-      }
+    newNote() {
+      const note = {
+        id : this.notes.length + 1,
+        title: '',
+        content: '',
+        tags: []
+      };
 
+      this.notes.push(note);
+      return note.id;
+    },
+    updateNote(note) {
       const index = this.notes.findIndex(n => n.id === note.id)
       this.notes[index] = note
     }
