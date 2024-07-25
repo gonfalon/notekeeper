@@ -1,5 +1,5 @@
 <template>
-  <v-app id="inspire">
+  <v-app>
     <v-app-bar flat>
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
 
@@ -38,8 +38,10 @@
 </template>
 
 <script setup>
+  import { getCurrentSession, syncNotes } from '@/api/index';
   import { useAppStore } from '@/stores/app';
-  import { ref } from 'vue'
+  import { onBeforeMount, ref } from 'vue'
+  import { useRouter } from 'vue-router';
 
   const ALLNOTES = 'Notes';
 
@@ -70,4 +72,17 @@
       el.click();
     }, 100);
   }
+
+  onBeforeMount(async () => {
+    var { data, error } = await getCurrentSession();
+
+    if (!data.session) {
+      // user is not logged in.
+      const router = useRouter();
+      router.push('/login');
+    }
+    
+    // we are logged in, yay!
+    syncNotes();
+  });
 </script>
