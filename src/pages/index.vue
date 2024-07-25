@@ -40,10 +40,22 @@
 <script setup>
   import { getCurrentSession, syncNotes } from '@/api/index';
   import { useAppStore } from '@/stores/app';
-  import { onBeforeMount, ref } from 'vue'
+  import { ref } from 'vue'
   import { useRouter } from 'vue-router';
 
   const ALLNOTES = 'Notes';
+
+  const router = useRouter();
+
+  var { data, error } = await getCurrentSession();
+
+  if (!data.session) {
+    // user is not logged in.
+    router.push('/login');
+  }
+
+  // we are logged in, yay!
+  syncNotes();
 
   const activeItem = ref(ALLNOTES);
   const drawer = ref(true);
@@ -73,16 +85,4 @@
     }, 100);
   }
 
-  onBeforeMount(async () => {
-    var { data, error } = await getCurrentSession();
-
-    if (!data.session) {
-      // user is not logged in.
-      const router = useRouter();
-      router.push('/login');
-    }
-    
-    // we are logged in, yay!
-    syncNotes();
-  });
 </script>

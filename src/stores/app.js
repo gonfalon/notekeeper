@@ -1,23 +1,11 @@
 // Utilities
 import { defineStore } from 'pinia'
+import { syncNotes } from '@/api';
 
 export const useAppStore = defineStore('app', {
   state: () => ({
     // data
-    notes: [
-      {
-        id: 1,
-        title: 'Note 1',
-        content: 'Content 1',
-        tags: ['Fred', 'Joe']
-      },
-      {
-        id: 2,
-        title: 'Note 2',
-        content: 'Content 2',
-        tags: ['Tag 3', 'Mark']
-      }
-    ],
+    notes: [],
   }),
   getters: {
     // computed properties
@@ -39,6 +27,7 @@ export const useAppStore = defineStore('app', {
     updateNote(note) {
       const index = this.notes.findIndex(n => n.id === note.id)
       this.notes[index] = note
+      syncNotes();
     }
   }
 })
