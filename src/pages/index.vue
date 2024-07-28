@@ -4,6 +4,8 @@
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
 
       <v-app-bar-title><v-icon>mdi-vuetify</v-icon> NoteKeeper</v-app-bar-title>
+      <v-spacer></v-spacer>
+      <v-btn :icon="darkMode ? 'mdi-weather-night' : 'mdi-weather-sunny'" @click="toggleTheme"></v-btn>
     </v-app-bar>
     <v-navigation-drawer
       class="pt-4"
@@ -44,6 +46,7 @@
   import { useAppStore } from '@/stores/app';
   import { storeToRefs } from 'pinia';
   import { ref } from 'vue'
+  import { useTheme } from 'vuetify';
   import { useRouter } from 'vue-router';
 
   const ALLNOTES = 'Notes';
@@ -91,4 +94,13 @@
     }, 1000);
   }
 
+
+const theme = useTheme()
+const darkMode = ref(theme.global.current.value.dark)
+
+function toggleTheme () {
+  console.log('toggle theme pressed');
+  theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark';
+  darkMode.value = theme.global.current.value.dark;
+}
 </script>

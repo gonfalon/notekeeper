@@ -1,7 +1,9 @@
 <template>
-    <v-card class="ma-8 pa-4 rounded-lg">
+    <v-card class="ma-8 pa-4 rounded-lg" hover>
         <v-card-title>{{ note?.title ?? 'Add a Note'}}</v-card-title>
-        <v-card-text v-if="note?.content">{{ note.content }}</v-card-text>
+        <v-card-text v-if="note?.content">
+            <span style="white-space: pre-wrap;">{{ note.content }}</span>
+        </v-card-text>
         <v-dialog v-if="!preventDialog" activator="parent" max-width="600">
             <v-card>
                 <v-card-title class="mb-0 pb-0">
@@ -24,7 +26,7 @@
                     />
                 </v-card-text>
                 <v-card-actions>
-                    <v-btn color="primary">Test</v-btn>
+                    <span v-if="note.last_modified" class="text-caption">Last saved {{ formatRelative(new Date(note.last_modified), new Date()) }}</span>
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -32,6 +34,8 @@
 </template>
 
 <script setup>
+import { formatRelative } from 'date-fns';
+
 const emit = defineEmits(['update']);
 const props = defineProps({
     note: Object,
@@ -41,6 +45,7 @@ const props = defineProps({
     }
 });
 
+const showColors = ref(false);
 const editableNote = ref({ ...props.note });
 
 function updateNote() {

@@ -28,6 +28,7 @@ export const useAppStore = defineStore('app', {
     },
     async updateNote(note) {
       note.isDirty = true;
+      note.last_modified = new Date().toUTCString();
       const index = this.notes.findIndex(n => n.note_id === note.note_id)
       this.notes[index] = note
       this.notes = await syncNotes(this.notes);

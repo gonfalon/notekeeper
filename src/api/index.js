@@ -28,7 +28,7 @@ async function syncNotesInternal(existingNotes) {
     const dirtyNotes = existingNotes?.filter(note => note.isDirty);
  
     if (dirtyNotes.length) {
-        var toUpdate = dirtyNotes.map(note => ({...omit(note, ['isDirty']), user_id: userId, last_modified: new Date().toISOString()}));
+        var toUpdate = dirtyNotes.map(note => ({...omit(note, ['id', 'isDirty']), user_id: userId }));
         console.log(toUpdate);
 
         const { error } = await supabase
