@@ -27,10 +27,13 @@
       </v-list>
     </v-navigation-drawer>
     <v-main>
-      <v-container>
-        <NoteCard :prevent-dialog="true" @click="newNote" />
+      <v-container v-if="loading">
+        <v-skeleton-loader type="card" elevation="10" />
+      </v-container>
+      <v-container v-else>
+        <NoteCard :prevent-dialog="true" @click="createNewNote" />
         <template v-for="note in visibleNotes" :key="note.id">
-          <NoteCard :id="`note-${note.id}`" :note="note" @update="store.updateNote"/>
+          <NoteCard :id="`note-${note.id}`" :note="note" @update="updateNote"/>
         </template>
       </v-container>
     </v-main>
@@ -38,51 +41,54 @@
 </template>
 
 <script setup>
-  import { getCurrentSession, syncNotes } from '@/api/index';
   import { useAppStore } from '@/stores/app';
+  import { storeToRefs } from 'pinia';
   import { ref } from 'vue'
   import { useRouter } from 'vue-router';
 
   const ALLNOTES = 'Notes';
 
   const router = useRouter();
+  const store = useAppStore();
+  const { updateNote, newNote, syncNotes, isLoggedIn } = store;
+  const { notes, tags } = storeToRefs(store);
 
-  var { data, error } = await getCurrentSession();
-
-  if (!data.session) {
-    // user is not logged in.
-    router.push('/login');
-  }
-
-  // we are logged in, yay!
-  syncNotes();
-
+  const visibleNotes = ref(notes.value);
   const activeItem = ref(ALLNOTES);
   const drawer = ref(true);
+  const loading = ref(true);
 
-  const store = useAppStore();
+  // before we do anything else, check and see if we're logged in.
+  if(!isLoggedIn()) {
+    router.replace('/login');
+  } else{
 
-  const visibleNotes = ref(store.notes);
+    syncNotes().then(() => {
+      loading.value = false;
+      visibleNotes.value = notes.value;
+    });
+  }
 
   const navItems = ref([
     { title: ALLNOTES, icon: 'mdi-pencil-outline' },
-    ...store.tags.map(tag => ({ title: tag, icon: 'mdi-tag-outline' })),
-    { title: 'Archive', icon: 'mdi-file-cabinet' },
+    ...tags.value?.map(tag => ({ title: tag, icon: 'mdi-tag-outline' })),
+    //{ title: 'Archive', icon: 'mdi-file-cabinet' },
     { title: 'Trash', icon: 'mdi-delete-outline' },
   ]);
 
   const setActiveFilter = (tag) => {
     activeItem.value = tag;
-    visibleNotes.value = tag === ALLNOTES ? store.notes : store.notes.filter(note => note.tags.includes(tag));
+    visibleNotes.value = tag === ALLNOTES ? notes.value : notes.value.filter(note => note.tags.includes(tag));
   }
   
-  const newNote = () => {
-    var id = store.newNote();
+  const createNewNote = () => {
+    var id = newNote();
+    setActiveFilter(ALLNOTES);
     setTimeout(() => {
       var el = document.getElementById(`note-${id}`)
       el.scrollIntoView({ behavior: 'smooth' });
       el.click();
-    }, 100);
+    }, 1000);
   }
 
 </script>

@@ -11,6 +11,8 @@
     "@mdi/font": "7.4.47",
     "@supabase/supabase-js": "^2.44.4",
     "core-js": "^3.37.1",
+    "date-fns": "^3.6.0",
+    "lodash-es": "^4.17.21",
     "roboto-fontface": "*",
     "vue": "^3.4.31",
     "vuetify": "^3.6.11"
