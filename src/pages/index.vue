@@ -5,7 +5,8 @@
 
       <v-app-bar-title><v-icon>mdi-vuetify</v-icon> NoteKeeper</v-app-bar-title>
       <v-spacer></v-spacer>
-      <v-btn :icon="darkMode ? 'mdi-weather-night' : 'mdi-weather-sunny'" @click="toggleTheme"></v-btn>
+      <v-icon>{{ unsavedChanges ? 'mdi-alert': 'mdi-check' }}</v-icon>
+      <span>{{ unsavedChanges ? 'unsaved changes': 'all changes saved' }}</span>
     </v-app-bar>
     <v-navigation-drawer
       class="pt-4"
@@ -34,8 +35,8 @@
       </v-container>
       <v-container v-else>
         <NoteCard :prevent-dialog="true" @click="createNewNote" />
-        <template v-for="note in visibleNotes" :key="note.id">
-          <NoteCard :id="`note-${note.id}`" :note="note" @update="updateNote"/>
+        <template v-for="note in visibleNotes" :key="note.note_id">
+          <NoteCard :id="`note-${note.note_id}`" :note="note" @update="noteUpdated"/>
         </template>
       </v-container>
     </v-main>
@@ -45,7 +46,7 @@
 <script setup>
   import { useAppStore } from '@/stores/app';
   import { storeToRefs } from 'pinia';
-  import { ref } from 'vue'
+  import { computed, ref } from 'vue'
   import { useTheme } from 'vuetify';
   import { useRouter } from 'vue-router';
 
@@ -64,20 +65,25 @@
   // before we do anything else, check and see if we're logged in.
   if(!isLoggedIn()) {
     router.replace('/login');
-  } else{
-
+  } else {
     syncNotes().then(() => {
       loading.value = false;
       visibleNotes.value = notes.value;
+      console.log('tags: ', tags.value);
     });
   }
 
-  const navItems = ref([
+  const unsavedChanges = computed(() => notes.value.some(note => note.isDirty));
+
+  const navItems = computed(() => {
+  return [
     { title: ALLNOTES, icon: 'mdi-pencil-outline' },
     ...tags.value?.map(tag => ({ title: tag, icon: 'mdi-tag-outline' })),
     //{ title: 'Archive', icon: 'mdi-file-cabinet' },
     { title: 'Trash', icon: 'mdi-delete-outline' },
-  ]);
+  ]
+  }
+);
 
   const setActiveFilter = (tag) => {
     activeItem.value = tag;
@@ -85,22 +91,18 @@
   }
   
   const createNewNote = () => {
-    var id = newNote();
+    var note_id = newNote();
+    console.log(note_id);
     setActiveFilter(ALLNOTES);
     setTimeout(() => {
-      var el = document.getElementById(`note-${id}`)
+      var el = document.getElementById(`note-${note_id}`)
       el.scrollIntoView({ behavior: 'smooth' });
       el.click();
-    }, 1000);
+    }, 750);
   }
 
-
-const theme = useTheme()
-const darkMode = ref(theme.global.current.value.dark)
-
-function toggleTheme () {
-  console.log('toggle theme pressed');
-  theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark';
-  darkMode.value = theme.global.current.value.dark;
-}
+  const noteUpdated = (note) => {
+    updateNote(note);
+    visibleNotes.value = notes.value;
+  }
 </script>
