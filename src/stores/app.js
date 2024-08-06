@@ -9,18 +9,18 @@ export const useAppStore = defineStore('app', {
   }),
   getters: {
     // computed properties
-    tags: state => state.notes?.map(note => note.tags).flat()
+    tags: state => [...new Set(state.notes?.map(note => note.tags.filter(t => t != 'Trash')).flat())],
+    unsavedChanges: state => state.notes.some(note => note.isDirty)
   },
   actions: {
     // methods
     newNote() {
       const note = {
         note_id : crypto.randomUUID(),
-        created_at: new Date().toUTCString(),
-        last_modified: new Date().toUTCString(),
         title: '',
         content: '',
-        tags: []
+        tags: [],
+        deleted: false,
       };
 
       this.notes.push(note);

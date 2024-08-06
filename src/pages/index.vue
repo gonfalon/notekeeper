@@ -5,8 +5,8 @@
 
       <v-app-bar-title><v-icon>mdi-vuetify</v-icon> NoteKeeper</v-app-bar-title>
       <v-spacer></v-spacer>
-      <v-icon>{{ unsavedChanges ? 'mdi-alert': 'mdi-check' }}</v-icon>
-      <span>{{ unsavedChanges ? 'unsaved changes': 'all changes saved' }}</span>
+      <v-icon>{{ changesIcon }}</v-icon>
+      <span class="px-2">{{ changesMessage }}</span>
     </v-app-bar>
     <v-navigation-drawer
       class="pt-4"
@@ -29,15 +29,17 @@
         ></v-list-item>
       </v-list>
     </v-navigation-drawer>
-    <v-main>
+    <v-main scrollable>
       <v-container v-if="loading">
         <v-skeleton-loader type="card" elevation="10" />
       </v-container>
       <v-container v-else>
         <NoteCard :prevent-dialog="true" @click="createNewNote" />
+        <v-scale-transition group>
         <template v-for="note in visibleNotes" :key="note.note_id">
           <NoteCard :id="`note-${note.note_id}`" :note="note" @update="noteUpdated"/>
         </template>
+        </v-scale-transition>
       </v-container>
     </v-main>
   </v-app>
@@ -46,8 +48,7 @@
 <script setup>
   import { useAppStore } from '@/stores/app';
   import { storeToRefs } from 'pinia';
-  import { computed, ref } from 'vue'
-  import { useTheme } from 'vuetify';
+  import { computed, ref } from 'vue';
   import { useRouter } from 'vue-router';
 
   const ALLNOTES = 'Notes';
@@ -55,9 +56,9 @@
   const router = useRouter();
   const store = useAppStore();
   const { updateNote, newNote, syncNotes, isLoggedIn } = store;
-  const { notes, tags } = storeToRefs(store);
+  const { notes, tags, unsavedChanges } = storeToRefs(store);
 
-  const visibleNotes = ref(notes.value);
+  const visibleNotes = ref(notes.value.sort((a, b) => new Date(b.last_modified) - new Date(a.last_modified)));
   const activeItem = ref(ALLNOTES);
   const drawer = ref(true);
   const loading = ref(true);
@@ -73,7 +74,8 @@
     });
   }
 
-  const unsavedChanges = computed(() => notes.value.some(note => note.isDirty));
+  const changesIcon = computed(() => unsavedChanges.value ? 'mdi-alert': 'mdi-check');
+  const changesMessage = computed(() => unsavedChanges.value ? 'Unsaved changes': 'All changes saved');
 
   const navItems = computed(() => {
   return [
@@ -87,7 +89,18 @@
 
   const setActiveFilter = (tag) => {
     activeItem.value = tag;
-    visibleNotes.value = tag === ALLNOTES ? notes.value : notes.value.filter(note => note.tags.includes(tag));
+
+    switch(tag) {
+      case ALLNOTES:
+        visibleNotes.value = notes.value.filter(note => !note.deleted).sort((a, b) => new Date(b.last_modified) - new Date(a.last_modified));
+        break;
+      case 'Trash':
+        visibleNotes.value = notes.value.filter(note => note.deleted).sort((a, b) => new Date(b.last_modified) - new Date(a.last_modified));
+        break;
+      default:
+        visibleNotes.value = notes.value.filter(note => !note.deleted && note.tags.includes(tag)).sort((a, b) => new Date(b.last_modified) - new Date(a.last_modified));
+        break;
+    }
   }
   
   const createNewNote = () => {
@@ -104,5 +117,6 @@
   const noteUpdated = (note) => {
     updateNote(note);
     visibleNotes.value = notes.value;
+    setActiveFilter(activeItem.value);
   }
 </script>

@@ -50,4 +50,4 @@ async function syncNotesInternal(existingNotes) {
     return data
 }
 
-export const syncNotes = throttle(syncNotesInternal, 10000)
+export const syncNotes = throttle(syncNotesInternal, 10000, { trailing: true });
