@@ -9,7 +9,7 @@ export const useAppStore = defineStore('app', {
   }),
   getters: {
     // computed properties
-    tags: state => [...new Set(state.notes?.map(note => note.tags.filter(t => t != 'Trash')).flat())],
+    tags: state => [...new Set(state.notes?.filter(n => !n.deleted).map(note => note.tags.filter(t => t != 'Trash')).flat())],
     unsavedChanges: state => state.notes.some(note => note.isDirty)
   },
   actions: {
