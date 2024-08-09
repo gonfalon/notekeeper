@@ -63,7 +63,7 @@
 
   const visibleNotes = ref(notes.value.sort((a, b) => new Date(b.last_modified) - new Date(a.last_modified)));
   const activeItem = ref(ALLNOTES);
-  const drawer = ref(true);
+  const drawer = ref(!mobile.value);
   const loading = ref(true);
 
   // before we do anything else, check and see if we're logged in.
