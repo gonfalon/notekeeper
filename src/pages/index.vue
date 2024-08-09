@@ -4,14 +4,15 @@
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
 
       <v-app-bar-title><v-icon>mdi-vuetify</v-icon> NoteKeeper</v-app-bar-title>
-      <v-spacer></v-spacer>
-      <v-icon>{{ changesIcon }}</v-icon>
-      <span class="px-2">{{ changesMessage }}</span>
+      <v-spacer v-if="!mobile"></v-spacer>
+      <v-icon class="mr-4">{{ changesIcon }}</v-icon>
+      <span v-if="!mobile" class="pr-2">{{ changesMessage }}</span>
     </v-app-bar>
     <v-navigation-drawer
       class="pt-4"
-      permanent
-      v-bind:rail="!drawer"
+      :permanent="!mobile"
+      v-bind:rail="!mobile && !drawer"
+      v-model="drawer"
       expand-on-hover
     >
       <v-list
@@ -49,9 +50,11 @@
   import { useAppStore } from '@/stores/app';
   import { storeToRefs } from 'pinia';
   import { computed, ref } from 'vue';
+  import { useDisplay } from 'vuetify';
   import { useRouter } from 'vue-router';
 
   const ALLNOTES = 'Notes';
+  const { mobile } = useDisplay();
 
   const router = useRouter();
   const store = useAppStore();
